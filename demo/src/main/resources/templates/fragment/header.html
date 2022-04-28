@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<link th:href="@{/css/header.css}" rel="stylesheet">
+<meta charset="UTF-8">
+</head>
+<header th:fragment="header">
+	 <script th:inline="javascript">
+		$(function(){
+			$(".test").on("click",'.update_btn',function(){
+				/*
+				update 이벤트 버튼
+				$('.부모 이름').on('click', '.걸고 싶은 대상', function() {
+ 				넣을 소스;});
+				
+				동적으로 생성된 기능의 이벤트 처리를 할경우 
+				*/
+				$('#select_result_div').css("display","none");
+				$(".body_list").css("display","none");
+				$(".body_update").css("display","block");
+				let getId = $(this).val() /* 위에서 event 시킨 버튼의 value값을 가져옴 */
+				$("#update_id").val(getId) /* update 시킬려는 row의 기본키 값을 가져옴 */
+				getAjax(getId);
+				return false;
+			})
+			
+			$(".formsubmit").on("click",function(){
+				/* 
+				update submit 이벤트 버튼
+				*/
+				$(".body_update").css("display","none");
+				$('#select_result_div').css("display","none");
+				$(".body_list").css("display","block");
+				updateAjax();
+				return false;
+			})
+			
+			$(".test").on("click",'.delete_btn',function(){
+				/*
+				delete 이벤트 버튼
+				$('.부모 이름').on('click', '.걸고 싶은 대상', function() {
+ 				넣을 소스;});
+				
+				동적으로 생성된 기능의 이벤트 처리를 할경우 
+				*/
+				let getId = $(this).val()  // $() 로 this 감싸주기 delete 시킬려는 버튼의 value값을 가져옴
+				deleteAjax(getId);
+				return false;
+				
+			})
+			$("#select_btn").on("click",function(){
+				/* 
+				select 기능의 버튼
+				*/
+				$(".body_list").css("display","none");
+				$(".body_update").css("display","none");
+				$(".body_home").css("display","none");
+				$(".detailpost").css("display","none");
+				$('#select_result_div').css("display","block");
+				selectAjax();
+				return false;
+			})
+		})
+		function selectAjax(){
+			/* select(검색) 기능의 ajax get형식 */
+			$.ajax({
+				type:"get",
+				url:"/board/select/"+$("#getSelect").val(),
+				data:"text",
+				success:function(vo){
+					console.log(vo);
+					for(let i in vo) {
+						  var id = parseInt(vo[i].id) /* 검색된 내용을 테이블 tr td에 추가시킴 */
+						  $("#table_tbody").append("<tr class='test'>")
+						  $("#table_tbody").append("<td class ='td_id'>"+ id+"</td>")
+						  $("#table_tbody").append("<td class ='td_title'>"+vo[i].Title+"</td>")
+						  $("#table_tbody").append("<td class ='td_content'>"+vo[i].Content+"</td>")
+						  $("#table_tbody").append("<td class ='td_update'><button class='update_btn' value="+id+">수정</button></td>")
+						  $("#table_tbody").append("<td class ='td_delete'><button claxss='delete_btn' value="+id+">삭제</button></td>")
+						  $("#table_tbody").append("</tr>")
+						}
+
+				},
+					
+				error:function(error){
+					console.log(error);
+				}
+				
+			});
+		}
+		
+		function getAjax(getId){	
+			/* 다른 기능에서 id값을 사용하기 위해 get으로 가져오는 ajax */
+			$.ajax({
+				type:"get",
+				url:"/board/"+getId,
+				data:getId,
+				dataType:"json",
+				success:function(vo){
+				},
+				 error: function(error){
+			       console.log(error);
+			    }
+			});
+		}
+		
+		function updateAjax(){
+			/* update 기능을 수행하고 put형식으로 전달 */
+			var id = $("#update_id").val();
+			var title = $("#update_title").val();
+			var content = $("#update_content").val();
+			var  inputData = {
+				"Title":title,
+				"Content":content
+			};
+			
+			$.ajax({
+				type:"put",
+				url:"/board/update/"+id,
+				data:JSON.stringify(inputData),
+				contentType:'application/json',
+				/* 
+				contentType으로 application/json 과 application/x-www-form-urlencoded 가 존재함.
+				
+				contentType:'application/x-www-form-urlencoded'
+				js의 ajax를 통해서 json을 보낼경우 contentType을 따로 기입하지 않으면 디폴트값인  
+				application/x-www-form-urlencoded 로 전송됨.
+				이경우 전송되는 데이터의 페이로드 값은 "key=value&key2=value2" 형태를 가짐.
+				
+				contentType:'application/json'
+				Android나 IOS앱을 위한 RestAPI를 개발하는 경우 사용되며 HTTP Request Message의 Payload를 보내는 것으로
+				데이터 페이로드는 {"key":"value","key2":"value2"} 의 형태로 json객체가 될 수 있음.
+				정리하면, 클라이언트에서 Content-Type을 application/json로 세팅해서 데이터를 송신하고, 
+				서버에서는 @RequestBody를 사용해서 데이터를 받도록 코드를 작성하면 Json 데이터를 송수신할 수 있는 상태가 된다.
+				
+				RestAPI의 경우 보통 JSON 타입으로 요청하고 요청받는다.
+				html form 태그를 사용하여 post방식으로 요청하거나 JQuery의 ajax등의 요청을 할때 디폴트 타입은
+				application/x-www-form-urlencoded 이다.
+				*/
+				success:function(vo){
+					console.log(vo);
+					location.reload();
+					alert("수정 완료");	
+					
+				},
+				error: function(error){
+				console.log(error);
+				}
+			});
+		}
+		
+		function deleteAjax(getId){
+			/* 삭제기능을 구현하는 ajax delete 형식으로 전달 */
+			$.ajax({
+				type:"delete",
+				url:"/board/delete/"+getId,
+				success:function(){
+					alert("삭제 완료");
+					location.reload();
+				},
+				error:function(error){
+					alert(error);
+				}
+				
+			});
+		}
+	</script>
+	
+	<div id = "header-navbar">
+		header
+		<input type="text" id="getSelect">
+		<button id ="select_btn">검색</button>
+		
+		<!-- display:none = 검색시에만 block -->
+		<div id="select_result_div">
+			<table>
+				<thead>
+					<tr>
+						<th class ="td_id">No</th>
+						<th class ="td_title">제목</th>
+						<th class ="td_content">내용</th>
+						<th class ="td_update">수정</th>
+						<th class ="td_delete">삭제</th>
+					</tr>
+				</thead>
+				<tbody id="table_tbody" class = "test">
+					<!-- 검색해온 데이터를 js에서 생성 -->
+				</tbody>		
+			</table>
+		</div>
+		
+	</div>
+</header>
+</html>

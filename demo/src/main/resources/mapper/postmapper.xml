@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.IPostDAO">
+	
+	<!--  id = com.example.demo.dao.IPostDAO의 메소드를 의미,
+		  parameterType = 마이바티스에서 parameterType 속성을 사용해서 해당 파라미터의 자료형을 명시해준다
+		  resultType = 데이터를 반활할 그릇을 의미한다.
+		  #{} = 매개변수값을 받아서 설정하기 위해서 사용함?
+		   -->
+		   
+		   
+	<!-- 넘겨받은 vo값을 db의 post테이블에 insert -->		   
+	<insert id="insertPost" parameterType="com.example.demo.model.PostVO">
+		INSERT INTO post VALUES (#{id},#{title},#{content})
+	</insert>
+	
+	<!-- int형식으로 받은 id값을 이용하여 select로 db에서 검색함. -->
+	<select id="selectPost" parameterType="int" resultType="com.example.demo.model.PostVO">
+		SELECT * FROM post WHERE id = #{id}
+	</select>
+
+	<!-- db안의 가장 최근의 id값을 가져오기 위함. 받아오는 값만 존재하니 resultMap만 필요 -->
+	<select id="selectId" resultType="int">
+		SELECT MAX(id) FROM post ORDER BY id DESC LIMIT 1
+		<!-- ASC = 오름차순, DESC = 내림차순 -->
+	</select>
+	
+	<!-- db안의 id개수를 계산 -->
+	<select id ="countId" resultType="int">
+		SELECT COUNT(id) FROM post
+	</select>
+	
+	<select id = "selectList" resultType="com.example.demo.model.PostVO">
+		SELECT * FROM post ORDER BY id DESC;
+	</select>
+	
+	<update id="updatePost" parameterType="com.example.demo.model.PostVO" >
+		UPDATE post set title=#{title},content=#{content} where id=#{id}
+	</update>
+	
+	<delete id="deletePost" parameterType="int">
+		DELETE FROM post WHERE id = #{id}
+	</delete>
+	
+	<select id="selectJson" parameterType="String" resultType="com.example.demo.model.PostVO">
+		SELECT * FROM post WHERE title LIKE CONCAT("%",#{select},"%") or content LIKE CONCAT ("%",#{select},"%")
+		<!-- LIKE -->
+		<!-- CONCAT()  -->
+	</select>
+</mapper>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layouts/layout}">
+<head>
+<meta charset="UTF-8">
+<link th:href="@{/css/detailPage.css}" rel="stylesheet">
+<script type="text/javascript" th:src="@{/js/jquery-3.6.0.min.js}"></script>
+<title>DetailPage</title>
+</head>
+
+<div layout:fragment="content" id="warp">
+	<div class="detailpost">
+		<input type="hidden" th:id="hidden_id" th:value=${selectVO.id}>
+		<p th:text=${selectVO.Title} />
+		<br>
+		<p th:text=${selectVO.Content} />
+		<br>
+		<hr>
+		<br>
+		<h3>댓글</h3>
+		<br> <input type="text" placeholder="제목을 입력하세요"
+			id="comment_title"><br> <input type="text"
+			placeholder="내용을 입력하세요" id="comment_content"><br>
+		<button id="comment_btn">작성</button>
+		<br> <br>
+		<hr>
+		<br> <br>
+		<div class="comment_body">
+		<th:block th:each="list : ${commentVO}">
+				<th:block th:if="${list.commentParents} == 0" th:value="${list.commentId}">
+					<p th:text="${list.commentId}"></p>
+					<p th:text="${list.commentTitle}"></p>
+					<p th:text="${list.commentContent}"></p>
+					<button class="comment_parents_Id" th:value="${list.commentId}">댓글작성</button>
+					<br><br>
+					<th:block th:each="replylist : ${replyVO}">
+						<th:block th:if="${replylist.commentParents} == ${list.commentId}">
+								<input type="hidden" class ="${replylist.commentId}" th:value="${replylist.commentDeep}">
+								<p>-></p>
+								<p th:text="${replylist.commentId}"></p>
+								<p th:text="${replylist.commentParents}"></p>
+								<p th:text="${replylist.commentTitle}"></p>
+								<p th:text="${replylist.commentContent}"></p>
+								<button class="comment_parents_Id" th:value="${replylist.commentId}">댓글작성</button>
+								<th:block th:each="replylist_2 : ${relplyVO2}">
+										<th:block th:if="${replylist_2.commentParents} == ${replylist.commentId}">
+											<input type="hidden" class ="${replylist_2.commentId}" th:value="${replylist_2.commentDeep}">
+											<p>->-></p>
+											<p th:text="${replylist_2.commentId}"></p>
+											<p th:text="${replylist_2.commentParents}"></p>
+											<p th:text="${replylist_2.commentTitle}"></p>
+											<p th:text="${replylist_2.commentContent}"></p>
+											<button class="comment_parents_Id" th:value="${replylist_2.commentId}">댓글작성</button>
+											<br>
+										</th:block>	
+								</th:block>
+								<br>
+						</th:block>						
+					</th:block>
+					<br><hr><br>
+				</th:block>
+				<!-- 대댓글 작성 body -->
+				<div th:class="${list.commentId}"></div>
+		</th:block>
+		</div>
+		<a href="/list">List</a>
+	</div>
+	
+	<!-- 업데이트 기능 -->
+	<div class="body_update">
+		<form id="updateForm">
+			<table>
+				<!-- 
+					원래 get으로 가져온 값을 바로 넣어줄려고 했으나 th : ${} 형태로 받을 경우 해당 div는 display:none으로 숨긴 형태라서 null 오류가 발생
+					따라서 td_update .btn 클릭시 버튼의 value값을 js에서 넘겨받아 input값에 입력하여 update 진행
+					  -->
+				<tr>
+					<td>No:</td>
+					<td><input id="update_id" value=0 readonly></td>
+				</tr>
+				<tr>
+					<td>Title:</td>
+					<td><input id="update_title" name="title" /></td>
+				</tr>
+				<tr>
+					<td>Content:</td>
+					<td><input id="update_content" name='content' /></td>
+				</tr>
+				<tr>
+					<td><button class="formsubmit">입력</button></td>
+				</tr>
+			</table>
+		</form>
+		<a href="/list">List</a>
+	</div>
+
+	<script th:inline="javascript">
+		
+		$(function() {
+			let comment_parents_Id = 1; // 함수안의 지역변수로 선언하여 아래의 이벤트들에서 사용
+			let i = 1; //위와 비슷한 이유로 사용하며 대댓글의 입력칸 생성을 제한함
+			
+			//부모 댓글 등록
+			$("#comment_btn").on("click", function() {
+				let id = $("#hidden_id").val();
+				commentInsertAjax(id)
+			})
+
+			//부모 댓글 클릭시
+			$(".comment_parents_Id")
+					.click(
+							function() {
+								comment_parents_Id = $(this).val()
+								
+								if (i == 1) {
+									$("." + comment_parents_Id)
+											.append(
+													'<input type="text" placeholder="제목을 입력하세요" id ="comment_child_title"><br>')
+									$("." + comment_parents_Id)
+											.append(
+													'<input type="text" placeholder="내용을 입력하세요" id ="comment_child_content"><br>')
+									$("." + comment_parents_Id)
+											.append(
+													'<button id ="comment_child_btn" th:value='+comment_parents_Id+'>작성</button>')
+									i = -1; //대댓글 input 생성 제한 버튼을 눌러 작성시 새로고침 되니 1로 변경됨
+								}
+
+							})
+
+			$(".comment_body").on("click", "#comment_child_btn", function() {
+				let id = $("#hidden_id").val()
+				let parents = comment_parents_Id
+				let deep = 1;
+				deep++
+				relpyAjax(id, parents, deep);
+				return false;
+			})
+
+		})
+
+		function commentInsertAjax(id) {
+
+			var jsondata = {
+				"commentTitle" : $("#comment_title").val(),
+				"commentContent" : $("#comment_content").val(),
+				"commentDeep" : 0
+			};
+			if ($("#comment_title").val() == "") {
+				alert("내용을 입력해 주세요")
+				return false;
+
+			}
+			$.ajax({
+				type : "post",
+				url : "/detailpage/comment/" + id,
+				data : JSON.stringify(jsondata),
+				contentType : "application/json",
+				success : function() {
+					location.reload();
+
+				},
+				error : function(error) {
+					alert(error);
+				}
+
+			})
+		}
+
+		function relpyAjax(id, parents, deep) {
+			let title = $("#comment_child_title").val()
+			let content = $("#comment_child_content").val()
+			++deep;
+			var jsondata = {
+				"commentTitle" : title,
+				"commentContent" : content,
+				"commentDeep" : deep
+
+			}
+
+			$.ajax({
+				type : "post",
+				data : JSON.stringify(jsondata),
+				url : "/detailpage/comment/" + id + "/" + parents,
+				contentType : "application/json",
+				success : function() {
+					location.reload();
+
+				},
+				error : function(error) {
+					alert(error);
+				}
+			});
+		}
+		
+	</script>
+
+</div>
+
+</html>

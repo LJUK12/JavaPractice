@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/layout}"
+>
+<head>
+<meta charset="UTF-8">
+<link th:href="@{/css/home.css}" rel="stylesheet">
+<script type="text/javascript" th:src="@{/js/jquery-3.6.0.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/postJS.js}"></script>
+<title>Home</title>
+</head>
+<!-- BODY를 넣으면 layout에서 두번 출력시킴 주의!  -->
+<!-- 검색시에 display:none -->
+	 <div layout:fragment="content" id="warp">
+	 	<div id="body" class="body_home">
+			<form id="postForm">
+				<table>
+					<tr><td>Title:</td><td><input id="title"name="title"/></td></tr>
+					<tr><td>Content:</td><td><input id="content"name='content'/></td></tr>
+					<tr><td><button id="formsubmit">입력</button></td></tr>
+				</table>
+			</form>	
+		</div>
+		
+		<!-- 검색시 display:block 평소는 none -->
+		<div class="body_update">
+			<form id="updateForm">
+				<table>
+					<!-- 
+					원래 get으로 가져온 값을 바로 넣어줄려고 했으나 th : ${} 형태로 받을 경우 해당 div는 display:none으로 숨긴 형태라서 null 오류가 발생
+					따라서 td_update .btn 클릭시 버튼의 value값을 js에서 넘겨받아 input값에 입력하여 update 진행
+					  -->
+					<tr><td>No:</td><td><input id="update_id" value=0 readonly></td></tr>
+					<tr><td>Title:</td><td><input id="update_title"name="title"/></td></tr>
+					<tr><td>Content:</td><td><input id="update_content"name='content'/></td></tr>
+					<tr><td><button class="formsubmit">입력</button></td></tr>
+				</table>
+			</form>	
+		</div>
+		
+		<a href="list">List</a>
+	</div>
+</html>

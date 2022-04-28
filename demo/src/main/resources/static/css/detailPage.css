@@ -1,0 +1,14 @@
+@charset "UTF-8";
+
+
+#warp{
+	
+	margin:15%;
+	
+}
+.reply_comment{
+	padding-left:30px;
+}
+.body_update{
+	display:none;
+}

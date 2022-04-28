@@ -1,0 +1,40 @@
+@charset "UTF-8";
+
+*{
+	margin:0;
+	padding:0;
+}
+
+#warp{
+	margin-left:15%;
+	margin-right:15%;
+}
+
+#list{
+	margin:150px;
+}
+
+#list th{
+	text-align:left;
+	margin-bottom: 100px;
+}
+
+.td_id{
+	width:100px;
+}
+.td_title{
+	width:300px;
+}
+.td_content{
+	width:300px;
+}
+.td_update{
+	width:100px;
+}
+.td_delete{
+	width:100px;
+}
+
+.body_update{
+	display:none;
+}

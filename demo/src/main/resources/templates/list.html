@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/layout}"
+>
+<head>
+<meta charset="UTF-8">
+
+<link th:href="@{/css/list.css}" rel="stylesheet">
+<script type="text/javascript" th:src="@{/js/jquery-3.6.0.min.js}"></script>
+<title>List</title>
+
+</head>
+
+
+<!-- BODY를 넣으면 layout에서 두번 출력시킴 주의!  -->
+<!-- 검색시 display:none 평소는 block -->
+	 <div layout:fragment="content" id="warp">
+		<div id = "body"class = "body_list">
+			<table  id ="list">
+				<thead>
+					<tr>
+						<th class ="td_id">No</th>
+						<th class ="td_title">제목</th>
+						<th class ="td_content">내용</th>
+						<th class ="td_update">수정</th>
+						<th class ="td_delete">삭제</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="list,stat : ${list}" class="test">
+						<td class ="td_id" th:text = ${list.id}></td>
+						<td class ="td_title" th:text = ${list.title}></td>
+						<td class ="td_content" th:text = ${list.content}></td>
+						<td class ="td_update"><button class="update_btn" th:value=${list.id}>수정</button></td>
+						<td class ="td_delete"><button class="delete_btn" th:value=${list.id}>삭제</button></td>
+						<td><a th:href="@{/detailpage/{id}(id=${list.id})}">view</a></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>	
+		
+		<!-- 검색시 display:block 평소에는 none -->
+		<div id = "body" class="body_update">
+			<form id="updateForm">
+				<table>
+					<!-- 
+					원래 get으로 가져온 값을 바로 넣어줄려고 했으나 th : ${} 형태로 받을 경우 해당 div는 display:none으로 숨긴 형태라서 null 오류가 발생
+					따라서 td_update .btn 클릭시 버튼의 value값을 js에서 넘겨받아 input값에 입력하여 update 진행
+					  -->
+					<tr><td>No:</td><td><input id="update_id" value=0 readonly></td></tr>
+					<tr><td>Title:</td><td><input id="update_title"name="title"/></td></tr>
+					<tr><td>Content:</td><td><input id="update_content"name='content'/></td></tr>
+					<tr><td><button class="formsubmit">입력</button></td></tr>
+				</table>
+			</form>	
+		</div>
+		
+		<a href="/">Home</a>
+	</div>
+</html>
